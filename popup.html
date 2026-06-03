@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>X Reply Cleaner</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>X Reply Cleaner</h1>
+        <label class="switch">
+          <input id="enabled" type="checkbox">
+          <span></span>
+        </label>
+      </header>
+
+      <section>
+        <label class="row">
+          <span>只处理回复页</span>
+          <input id="repliesOnly" type="checkbox">
+        </label>
+        <label class="row">
+          <span>显示隐藏提示</span>
+          <input id="showPlaceholder" type="checkbox">
+        </label>
+        <label class="row">
+          <span>隐藏推广内容</span>
+          <input id="hidePromoted" type="checkbox">
+        </label>
+      </section>
+
+      <section>
+        <label for="threshold">屏蔽阈值</label>
+        <div class="slider">
+          <input id="threshold" type="range" min="1" max="20" step="1">
+          <output id="thresholdValue"></output>
+        </div>
+      </section>
+
+      <button id="openOptions" type="button">编辑关键词和账号规则</button>
+      <p id="status" aria-live="polite"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

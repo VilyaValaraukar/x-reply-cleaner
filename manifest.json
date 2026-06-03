@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "X Reply Cleaner",
+  "description": "Hide likely spam replies on X with local keyword and emoji heuristics.",
+  "version": "0.1.0",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "X Reply Cleaner",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}

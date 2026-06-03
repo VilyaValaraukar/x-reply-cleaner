@@ -1,0 +1,118 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+}
+
+main {
+  width: min(900px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+header,
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+p {
+  margin: 6px 0 0;
+  color: color-mix(in srgb, CanvasText 62%, transparent);
+}
+
+section {
+  margin-top: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  font-weight: 650;
+}
+
+input,
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid color-mix(in srgb, CanvasText 18%, transparent);
+  border-radius: 6px;
+  background: Canvas;
+  color: CanvasText;
+  font: inherit;
+}
+
+input {
+  height: 42px;
+  padding: 0 12px;
+}
+
+textarea {
+  min-height: 180px;
+  padding: 12px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 16px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+#resetDefaults {
+  background: color-mix(in srgb, CanvasText 12%, transparent);
+  color: CanvasText;
+}
+
+#status {
+  min-height: 22px;
+  margin: 0;
+  color: #168a5f;
+}
+
+@media (max-width: 720px) {
+  header,
+  footer,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  header,
+  footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

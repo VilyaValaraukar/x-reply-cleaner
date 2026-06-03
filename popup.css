@@ -1,0 +1,117 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  width: 320px;
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+}
+
+main {
+  padding: 16px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+section {
+  border-top: 1px solid color-mix(in srgb, CanvasText 14%, transparent);
+  padding: 12px 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 34px;
+  font-size: 14px;
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  width: 46px;
+  height: 26px;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+}
+
+.switch span {
+  width: 100%;
+  border-radius: 999px;
+  background: color-mix(in srgb, CanvasText 18%, transparent);
+  transition: 0.18s ease;
+}
+
+.switch span::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: Canvas;
+  box-shadow: 0 1px 4px color-mix(in srgb, CanvasText 24%, transparent);
+  transition: 0.18s ease;
+}
+
+.switch input:checked + span {
+  background: #168a5f;
+}
+
+.switch input:checked + span::after {
+  transform: translateX(20px);
+}
+
+.slider {
+  display: grid;
+  grid-template-columns: 1fr 32px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+button {
+  width: 100%;
+  min-height: 38px;
+  border: 0;
+  border-radius: 6px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+#status {
+  min-height: 18px;
+  margin: 10px 0 0;
+  color: #168a5f;
+  font-size: 12px;
+}

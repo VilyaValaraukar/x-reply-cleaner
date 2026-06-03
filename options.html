@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>X Reply Cleaner 设置</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>X Reply Cleaner 设置</h1>
+          <p>规则仅保存在本机浏览器，不会上传。</p>
+        </div>
+        <button id="resetDefaults" type="button">恢复默认</button>
+      </header>
+
+      <section class="grid">
+        <label>
+          <span>屏蔽阈值</span>
+          <input id="threshold" type="number" min="1" max="30">
+        </label>
+        <label>
+          <span>emoji 数量阈值</span>
+          <input id="emojiLimit" type="number" min="0" max="50">
+        </label>
+      </section>
+
+      <section>
+        <label for="keywords">关键词</label>
+        <textarea id="keywords" spellcheck="false"></textarea>
+      </section>
+
+      <section class="grid">
+        <label>
+          <span>总是屏蔽的账号</span>
+          <textarea id="blockedHandles" spellcheck="false"></textarea>
+        </label>
+        <label>
+          <span>永不屏蔽的账号</span>
+          <textarea id="trustedHandles" spellcheck="false"></textarea>
+        </label>
+      </section>
+
+      <footer>
+        <button id="save" type="button">保存设置</button>
+        <p id="status" aria-live="polite"></p>
+      </footer>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>
