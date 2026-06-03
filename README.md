@@ -1,6 +1,6 @@
 # X Reply Cleaner
 
-一个本地运行的 Chrome Manifest V3 扩展，用于屏蔽在 X / Twitter 网页里隐藏疑似中文约炮广告回复。
+一个本地运行的 Chrome Manifest V3 扩展，用于在 X / Twitter 网页里隐藏疑似中文广告黄推。
 
 ## 功能
 
