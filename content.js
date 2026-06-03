@@ -1,54 +1,5 @@
 (function () {
-  const DEFAULT_SETTINGS = {
-    enabled: true,
-    repliesOnly: true,
-    hidePromoted: true,
-    showPlaceholder: false,
-    threshold: 6,
-    emojiLimit: 7,
-    keywords: [
-      "约炮",
-      "可约",
-      "线下",
-      "同城",
-      "上门",
-      "外围",
-      "固炮",
-      "寻固炮",
-      "找固炮",
-      "空降",
-      "裸聊",
-      "骚",
-      "sao",
-      "更骚",
-      "尤物",
-      "嫩",
-      "大尺度",
-      "私房",
-      "福利姬",
-      "反差",
-      "学生妹",
-      "喝茶",
-      "接单",
-      "包夜",
-      "兼职",
-      "资源",
-      "主页",
-      "点击主页",
-      "点主页",
-      "私信",
-      "加我",
-      "加v",
-      "加微",
-      "微信",
-      "电报",
-      "飞机",
-      "telegram",
-      "tg"
-    ],
-    trustedHandles: [],
-    blockedHandles: []
-  };
+  const DEFAULT_SETTINGS = globalThis.X_REPLY_CLEANER_DEFAULT_SETTINGS;
 
   const PROCESSED_ATTR = "data-x-reply-cleaner-processed";
   const HIDDEN_ATTR = "data-x-reply-cleaner-hidden";
@@ -56,6 +7,8 @@
   let settings = { ...DEFAULT_SETTINGS };
   let observer;
   let scanTimer;
+  const processedTweets = new WeakMap();
+  const manuallyShownTweets = new WeakSet();
 
   const BUILT_IN_SPAM_TERMS = [
     "固炮",
@@ -132,7 +85,7 @@
     });
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName !== "sync" && areaName !== "local") return;
+      if (areaName !== "local") return;
       if (!changes.xReplyCleanerSettings) return;
       settings = normalizeSettings(changes.xReplyCleanerSettings.newValue);
       resetPage();
@@ -142,7 +95,7 @@
 
   function loadSettings() {
     return new Promise((resolve) => {
-      chrome.storage.sync.get("xReplyCleanerSettings", (data) => {
+      chrome.storage.local.get("xReplyCleanerSettings", (data) => {
         settings = normalizeSettings(data.xReplyCleanerSettings);
         resolve();
       });
@@ -198,8 +151,15 @@
   }
 
   function processTweet(tweet, index) {
-    if (tweet.getAttribute(PROCESSED_ATTR) === settingsSignature()) return;
-    tweet.setAttribute(PROCESSED_ATTR, settingsSignature());
+    const signature = settingsSignature();
+    if (processedTweets.get(tweet) === signature) return;
+    processedTweets.set(tweet, signature);
+    tweet.setAttribute(PROCESSED_ATTR, "true");
+
+    if (manuallyShownTweets.has(tweet)) {
+      showTweet(tweet);
+      return;
+    }
 
     const text = getVisibleText(tweet);
     const handle = extractHandle(tweet);
@@ -224,19 +184,14 @@
       settings.showPlaceholder,
       settings.threshold,
       settings.emojiLimit,
-      settings.keywords.join("|"),
-      settings.trustedHandles.join("|"),
-      settings.blockedHandles.join("|")
+      settings.keywords.length,
+      settings.trustedHandles.length,
+      settings.blockedHandles.length
     ].join("::");
   }
 
   function getVisibleText(node) {
-    return Array.from(node.querySelectorAll("script, style, svg"))
-      .reduce((root, removable) => {
-        removable.setAttribute("aria-hidden", "true");
-        return root;
-      }, node)
-      .innerText || "";
+    return node.innerText || "";
   }
 
   function extractHandle(tweet) {
@@ -422,8 +377,6 @@
 
   function hideTweet(tweet, result) {
     tweet.setAttribute(HIDDEN_ATTR, "true");
-    tweet.dataset.xReplyCleanerReason = result.reasons.join("; ");
-    tweet.dataset.xReplyCleanerScore = String(result.score);
 
     if (settings.showPlaceholder) {
       tweet.style.display = "";
@@ -453,13 +406,13 @@
       placeholder.type = "button";
       placeholder.className = PLACEHOLDER_CLASS;
       placeholder.addEventListener("click", () => {
-        tweet.setAttribute(PROCESSED_ATTR, "manual-show");
+        manuallyShownTweets.add(tweet);
         showTweet(tweet);
       });
       tweet.prepend(placeholder);
     }
     placeholder.textContent = `已隐藏疑似广告回复，评分 ${result.score}。点击查看。`;
-    placeholder.title = result.reasons.join("; ");
+    placeholder.title = "点击查看这条回复";
   }
 
   function removePlaceholder(tweet) {
@@ -473,6 +426,8 @@
   function resetPage() {
     document.querySelectorAll(`article[${PROCESSED_ATTR}]`).forEach((tweet) => {
       tweet.removeAttribute(PROCESSED_ATTR);
+      processedTweets.delete(tweet);
+      manuallyShownTweets.delete(tweet);
       showTweet(tweet);
     });
   }

@@ -1,53 +1,4 @@
-const DEFAULT_SETTINGS = {
-  enabled: true,
-  repliesOnly: true,
-  hidePromoted: true,
-  showPlaceholder: false,
-  threshold: 6,
-  emojiLimit: 7,
-  keywords: [
-    "约炮",
-    "可约",
-    "线下",
-    "同城",
-    "上门",
-    "外围",
-    "固炮",
-    "寻固炮",
-    "找固炮",
-    "空降",
-    "裸聊",
-    "骚",
-    "sao",
-    "更骚",
-    "尤物",
-    "嫩",
-    "大尺度",
-    "私房",
-    "福利姬",
-    "反差",
-    "学生妹",
-    "喝茶",
-    "接单",
-    "包夜",
-    "兼职",
-    "资源",
-    "主页",
-    "点击主页",
-    "点主页",
-    "私信",
-    "加我",
-    "加v",
-    "加微",
-    "微信",
-    "电报",
-    "飞机",
-    "telegram",
-    "tg"
-  ],
-  trustedHandles: [],
-  blockedHandles: []
-};
+const DEFAULT_SETTINGS = globalThis.X_REPLY_CLEANER_DEFAULT_SETTINGS;
 
 const elements = {
   enabled: document.getElementById("enabled"),
@@ -83,8 +34,8 @@ elements.threshold.addEventListener("input", () => {
 });
 
 function load() {
-  chrome.storage.sync.get("xReplyCleanerSettings", (data) => {
-    settings = { ...DEFAULT_SETTINGS, ...(data.xReplyCleanerSettings || {}) };
+  chrome.storage.local.get("xReplyCleanerSettings", (data) => {
+    settings = normalizeSettings(data.xReplyCleanerSettings);
     render();
   });
 }
@@ -99,11 +50,27 @@ function render() {
 }
 
 function save() {
-  chrome.storage.sync.set({ xReplyCleanerSettings: settings }, () => {
+  chrome.storage.local.set({ xReplyCleanerSettings: settings }, () => {
     window.clearTimeout(statusTimer);
-    elements.status.textContent = "已保存";
+    const error = chrome.runtime.lastError;
+    elements.status.textContent = error ? `保存失败：${error.message}` : "已保存";
     statusTimer = window.setTimeout(() => {
       elements.status.textContent = "";
-    }, 1200);
+    }, error ? 2600 : 1200);
   });
+}
+
+function normalizeSettings(value) {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...(value || {}),
+    threshold: clampNumber(value?.threshold, DEFAULT_SETTINGS.threshold, 1, 30),
+    emojiLimit: clampNumber(value?.emojiLimit, DEFAULT_SETTINGS.emojiLimit, 0, 50)
+  };
+}
+
+function clampNumber(value, fallback, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, number));
 }
