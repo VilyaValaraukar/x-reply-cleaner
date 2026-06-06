@@ -53,6 +53,19 @@
     "成人资源"
   ];
 
+  const OBFUSCATED_BAIT_TERMS = [
+    "返差",
+    "探路",
+    "花样多",
+    "能打✈",
+    "打✈",
+    "体制内老师",
+    "主页能打",
+    "dp就她",
+    "on体",
+    "xm体"
+  ];
+
   const PINYIN_SPAM_PATTERNS = [
     /\bsao\b/i,
     /\bsao\s*huo\b/i,
@@ -267,6 +280,12 @@
       reasons.push("pinyin bait");
     }
 
+    const obfuscatedBaitHits = OBFUSCATED_BAIT_TERMS.filter((term) => text.includes(term.toLowerCase()));
+    if (obfuscatedBaitHits.length) {
+      score += Math.min(6, obfuscatedBaitHits.length * 3);
+      reasons.push(`obfuscated bait: ${obfuscatedBaitHits.slice(0, 3).join(", ")}`);
+    }
+
     if (emojiCount > settings.emojiLimit) {
       score += Math.min(8, Math.ceil((emojiCount - settings.emojiLimit) / 2) + 2);
       reasons.push(`${emojiCount} emoji`);
@@ -295,6 +314,16 @@
     if (emojiCount >= 2 && hasMentionBait(rawText) && (adultBaitHits.length || pinyinSpamHits.length)) {
       score += 4;
       reasons.push("mention bait");
+    }
+
+    if (hasMentionBait(rawText) && hasCrypticTailCode(rawText) && hasObfuscatedAdultBait(rawText)) {
+      score += 6;
+      reasons.push("cryptic mention bait");
+    }
+
+    if (hasMentionBait(rawText) && obfuscatedBaitHits.length && hasObfuscatedAdultBait(rawText)) {
+      score += 4;
+      reasons.push("obfuscated mention bait");
     }
 
     if (hasMixedChinesePinyinAdultBait(rawText)) {
@@ -357,6 +386,22 @@
 
   function hasMentionBait(text) {
     return /@[A-Za-z0-9_]{3,15}/.test(text);
+  }
+
+  function hasCrypticTailCode(text) {
+    return /@[A-Za-z0-9_]{3,15}\s*[,，、]?\s*[0-9][a-z]\b/i.test(text);
+  }
+
+  function hasObfuscatedAdultBait(text) {
+    const patterns = [
+      /(?:主页|主頁).{0,10}(?:能打|可打|打).{0,3}(?:✈|飞机|飛機)/i,
+      /(?:刷了半天|找了半天|看了半天).{0,18}(?:主页|主頁)/i,
+      /(?:dp|on|xm)\s*(?:就她|体|體|体制|體制|老师|老師)/i,
+      /(?:线下|同城|30\+|熟).{0,10}(?:体制内老师|體制內老師|老师|老師)/i,
+      /(?:玩[的得]?就是|主打|专门).{0,8}(?:返差|反差|探路|花样多)/i,
+      /(?:探路|花样多).{0,12}@[A-Za-z0-9_]{3,15}/i
+    ];
+    return patterns.some((pattern) => pattern.test(text));
   }
 
   function hasMixedChinesePinyinAdultBait(text) {
