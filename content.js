@@ -14,6 +14,19 @@
     "固炮",
     "寻固炮",
     "找固炮",
+    "约见",
+    "约p",
+    "约P",
+    "约Ｐ",
+    "同城约",
+    "真实约见",
+    "真实对接",
+    "看我置顶",
+    "看我",
+    "点我",
+    "入口",
+    "1-5线",
+    "一到五线",
     "点击主页",
     "点主页",
     "看主页",
@@ -64,6 +77,28 @@
     "dp就她",
     "on体",
     "xm体"
+  ];
+
+  const DISPLAY_NAME_AD_TERMS = [
+    "1-5线",
+    "一到五线",
+    "全国1-5线",
+    "线覆盖",
+    "真实可靠",
+    "真实约见",
+    "真实对接",
+    "约见入口",
+    "同城约",
+    "同城约p",
+    "同城约P",
+    "同城约Ｐ",
+    "约p",
+    "约P",
+    "约Ｐ",
+    "看我置顶",
+    "看我",
+    "点我",
+    "入口"
   ];
 
   const PINYIN_SPAM_PATTERNS = [
@@ -226,7 +261,10 @@
     if (!/\/status\/\d+/.test(location.pathname)) return false;
     const tweets = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
     const firstVisibleTweet = tweets.find((item) => item.offsetParent !== null) || tweets[0];
-    return tweet === firstVisibleTweet || index === 0;
+    if (tweet !== firstVisibleTweet && index !== 0) return false;
+
+    const rect = tweet.getBoundingClientRect();
+    return rect.top <= 220 && rect.height > 260;
   }
 
   function scoreTweet(rawText, handle, displayName = "", hasExternalLink = false) {
@@ -268,6 +306,12 @@
       reasons.push(`display name: ${displayNameHits.slice(0, 3).join(", ")}`);
     }
 
+    const displayNameAdHits = DISPLAY_NAME_AD_TERMS.filter((term) => normalizedDisplayName.includes(term.toLowerCase()));
+    if (displayNameAdHits.length) {
+      score += Math.min(10, displayNameAdHits.length * 3);
+      reasons.push(`display ad terms: ${displayNameAdHits.slice(0, 4).join(", ")}`);
+    }
+
     const adultBaitHits = ADULT_BAIT_TERMS.filter((term) => text.includes(term.toLowerCase()));
     if (adultBaitHits.length) {
       score += Math.min(6, adultBaitHits.length * 3);
@@ -294,6 +338,21 @@
     if (emojiCount >= 3 && hasProfileBait(text)) {
       score += 4;
       reasons.push("profile bait with emoji");
+    }
+
+    if (hasEmojiWall(rawText, emojiCount)) {
+      score += 6;
+      reasons.push("emoji wall");
+    }
+
+    if (emojiCount >= 6 && displayNameAdHits.length) {
+      score += 6;
+      reasons.push("display ad with emoji wall");
+    }
+
+    if (displayNameAdHits.length && hasPinnedOrEntryBait(rawText)) {
+      score += 4;
+      reasons.push("pinned entry bait");
     }
 
     if (hasExternalLink) {
@@ -409,7 +468,7 @@
   }
 
   function hasProfileBait(text) {
-    return /(?:点|点击|看|进|戳|主页).{0,8}(?:主页|资料|简介)|(?:主页|资料|简介).{0,8}(?:约|炮|福利|资源|加|私)/i.test(text);
+    return /(?:点|点击|看|进|戳|主页|置顶|入口).{0,8}(?:主页|资料|简介|置顶|入口|我)|(?:主页|资料|简介|置顶|入口).{0,8}(?:约|炮|福利|资源|加|私|点|看)/i.test(text);
   }
 
   function hasSparseSpamShape(text, emojiCount) {
@@ -418,6 +477,30 @@
     const cjkCount = (compact.match(/[\u4e00-\u9fff]/g) || []).length;
     const symbolCount = (compact.match(/[^\u4e00-\u9fffA-Za-z0-9]/g) || []).length;
     return emojiCount >= 4 && symbolCount > cjkCount * 0.45;
+  }
+
+  function hasEmojiWall(text, emojiCount) {
+    if (emojiCount < 8) return false;
+    const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+    const emojiHeavyLines = lines.filter((line) => {
+      const lineEmojiCount = countEmoji(line);
+      const compactLength = Array.from(line.replace(/\s/g, "")).length || 1;
+      return lineEmojiCount >= 2 && lineEmojiCount / compactLength >= 0.55;
+    });
+
+    const repeatedEmoji = findRepeatedEmojiCount(text) >= 4;
+    return emojiHeavyLines.length >= 3 || repeatedEmoji;
+  }
+
+  function findRepeatedEmojiCount(text) {
+    const emoji = text.match(/\p{Extended_Pictographic}/gu) || [];
+    const counts = new Map();
+    emoji.forEach((item) => counts.set(item, (counts.get(item) || 0) + 1));
+    return Math.max(0, ...counts.values());
+  }
+
+  function hasPinnedOrEntryBait(text) {
+    return /(?:看我|点我|点击|看).{0,10}(?:置顶|入口|主页|我)|(?:置顶|入口).{0,10}(?:约见|约p|约P|同城|真实|对接)/i.test(text);
   }
 
   function hideTweet(tweet, result) {

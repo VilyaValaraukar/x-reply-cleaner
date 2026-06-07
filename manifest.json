@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "X Reply Cleaner",
   "description": "Hide likely spam replies on X with local keyword and emoji heuristics.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "permissions": [
     "storage"
   ],
