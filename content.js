@@ -44,6 +44,9 @@
     "骚",
     "sao",
     "sao货",
+    "好涩",
+    "她好涩",
+    "我不行了",
     "更骚",
     "没人比她更骚",
     "没人比她sao",
@@ -77,6 +80,13 @@
     "dp就她",
     "on体",
     "xm体"
+  ];
+
+  const SHORT_MENTION_BAIT_TERMS = [
+    "她好涩",
+    "好涩我不行了",
+    "好涩",
+    "我不行了"
   ];
 
   const DISPLAY_NAME_AD_TERMS = [
@@ -330,6 +340,12 @@
       reasons.push(`obfuscated bait: ${obfuscatedBaitHits.slice(0, 3).join(", ")}`);
     }
 
+    const shortMentionBaitHits = SHORT_MENTION_BAIT_TERMS.filter((term) => text.includes(term.toLowerCase()));
+    if (shortMentionBaitHits.length) {
+      score += Math.min(6, shortMentionBaitHits.length * 3);
+      reasons.push(`short mention bait: ${shortMentionBaitHits.slice(0, 3).join(", ")}`);
+    }
+
     if (emojiCount > settings.emojiLimit) {
       score += Math.min(8, Math.ceil((emojiCount - settings.emojiLimit) / 2) + 2);
       reasons.push(`${emojiCount} emoji`);
@@ -373,6 +389,11 @@
     if (emojiCount >= 2 && hasMentionBait(rawText) && (adultBaitHits.length || pinyinSpamHits.length)) {
       score += 4;
       reasons.push("mention bait");
+    }
+
+    if (hasShortAdultMentionBait(rawText)) {
+      score += 8;
+      reasons.push("short adult mention bait");
     }
 
     if (hasMentionBait(rawText) && hasCrypticTailCode(rawText) && hasObfuscatedAdultBait(rawText)) {
@@ -449,6 +470,18 @@
 
   function hasCrypticTailCode(text) {
     return /@[A-Za-z0-9_]{3,15}\s*[,，、]?\s*[0-9][a-z]\b/i.test(text);
+  }
+
+  function hasShortMentionTailCode(text) {
+    return /@[A-Za-z0-9_]{3,15}\s*[,，、]?\s*["'“”‘’`´]?\s*[a-z?？}）)]{1,3}\b/i.test(text);
+  }
+
+  function hasPointingEmoji(text) {
+    return /👉|👈|👇|☞|➡|→|->/.test(text);
+  }
+
+  function hasShortAdultMentionBait(text) {
+    return /她好[涩澀].{0,6}我不行了/i.test(text) && hasPointingEmoji(text) && hasMentionBait(text) && hasShortMentionTailCode(text);
   }
 
   function hasObfuscatedAdultBait(text) {
